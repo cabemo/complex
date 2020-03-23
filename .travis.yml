@@ -11,7 +11,11 @@ script:
   - docker-compose up test
 
 before_deploy:
-  - docker-compose build
+  - docker -t cabemo/multi_nginx build nginx ./nginx
+  - docker -t cabemo/multi_client build client ./client
+  - docker -t cabemo/multi_test build test ./test
+  - docker -t cabemo/multi_api build api ./api
+  - docker -t cabemo/multi_worker build worker ./worker
 
 after_success:
   - docker-compose build

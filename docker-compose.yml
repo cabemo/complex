@@ -68,6 +68,13 @@ services:
     environment: 
       - CI=true
     command: npm test
+  # # PROD TEST client
+  # client:
+  #   image: cabemo/multi_client:prod
+  #   container_name: complex_client
+  #   environment: 
+  #     - NODE_ENV=production
+  #   build: ./client
   # NGINX
   nginx:
     image: cabemo/multi_nginx
