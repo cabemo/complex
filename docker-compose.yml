@@ -1,0 +1,83 @@
+version: "3"
+services:
+  # REDIS
+  redis:
+    container_name: complex_redis
+    image: redis
+  # WORKER
+  worker:
+    image: cabemo/multi_worker
+    container_name: complex_worker
+    build:
+      context: ./worker
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /app/node_modules
+      - ./worker:/app
+    environment: 
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on: 
+      - redis
+  # POSTGRES
+  postgres:
+    container_name: complex_postgres
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mypass
+  # API
+  api:
+    image: cabemo/multi_api
+    container_name: complex_api
+    build: 
+      context: ./api
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./api:/app/
+      - /app/node_modules
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=postgres
+      - PG_PASS=mypass
+      - PG_DB=queries
+    depends_on: 
+      - postgres
+      - worker
+  # CLIENT
+  client:
+    image: cabemo/multi_client
+    container_name: complex_client
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    volumes: 
+      - /app/node_modules
+      - ./client:/app
+    stdin_open: true
+  # TEST client
+  test:
+    image: cabemo/multi_test
+    container_name: complex_test
+    build:
+      context: client
+      dockerfile: Dockerfile.dev
+    environment: 
+      - CI=true
+    command: npm test
+  # NGINX
+  nginx:
+    image: cabemo/multi_nginx
+    container_name: complex_nginx
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3050:80
+    depends_on:
+      - api
+      - client

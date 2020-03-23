@@ -1,0 +1,23 @@
+os: linux
+language: generic
+
+services:
+  - docker
+
+install:
+  - ls client
+  - docker-compose build test
+script:
+  - docker-compose up test
+
+before_deploy:
+  - docker-compose build
+
+after_success:
+  - docker-compose build
+  - echo $DH_PASS | docker login -u $DH_USER --password-stdin
+  - docker push $DH_USER/multi_nginx
+  - docker push $DH_USER/multi_client
+  - docker push $DH_USER/multi_test
+  - docker push $DH_USER/multi_api
+  - docker push $DH_USER/multi_worker
