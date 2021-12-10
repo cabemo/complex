@@ -1,27 +1,36 @@
-os: linux
+sudo: required
 language: generic
 
 services:
   - docker
 
-install:
-  - ls client
-  - docker-compose build test
-script:
-  - docker-compose up test
+before_install:
+  - docker build -t cygnetops/react-test -f ./client/Dockerfile.dev ./client
 
-before_deploy:
-  - docker -t cabemo/multi_nginx build nginx ./nginx
-  - docker -t cabemo/multi_client build client ./client
-  - docker -t cabemo/multi_test build test ./test
-  - docker -t cabemo/multi_api build api ./api
-  - docker -t cabemo/multi_worker build worker ./worker
+script:
+  - docker run -e CI=true cygnetops/react-test npm test
 
 after_success:
-  - docker-compose build
-  - echo $DH_PASS | docker login -u $DH_USER --password-stdin
-  - docker push $DH_USER/multi_nginx
-  - docker push $DH_USER/multi_client
-  - docker push $DH_USER/multi_test
-  - docker push $DH_USER/multi_api
-  - docker push $DH_USER/multi_worker
+  - docker build -t cygnetops/multi-client-10-14 ./client
+  - docker build -t cygnetops/multi-nginx-10-14 ./nginx
+  - docker build -t cygnetops/multi-server-10-14 ./server
+  - docker build -t cygnetops/multi-worker-10-14 ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push cygnetops/multi-client-10-14
+  - docker push cygnetops/multi-nginx-10-14
+  - docker push cygnetops/multi-server-10-14
+  - docker push cygnetops/multi-worker-10-14
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-east-1'
+  app: 'multi-docker'
+  env: 'MultiDocker-env'
+  bucket_name: 'elasticbeanstalk-us-east-1-923445559289'
+  bucket_path: 'docker-multi'
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY

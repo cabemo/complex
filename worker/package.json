@@ -1,14 +1,10 @@
 {
-  "name": "worker",
-  "main": "index.js",
+  "dependencies": {
+    "nodemon": "1.18.3",
+    "redis": "2.8.0"
+  },
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
-  "dependencies": {
-    "redis": "3.0.2"
-  },
-  "devDependencies": {
-    "nodemon": "2.0.2"
+    "dev": "nodemon"
   }
 }
