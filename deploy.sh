@@ -13,5 +13,5 @@ docker build \
 for image in client server worker; do docker push cabemo/multi-$image; docker push cabemo/multi-$image:$SHA; done
 kubectl apply -f k8s
 kubectl set image deployments/server-deployment server=cabemo/multi-server:$SHA
-kubectl set image deployments/client-deployment server=cabemo/multi-client:$SHA
-kubectl set image deployments/worker-deployment server=cabemo/multi-worker:$SHA
+kubectl set image deployments/client-deployment client=cabemo/multi-client:$SHA
+kubectl set image deployments/worker-deployment worker=cabemo/multi-worker:$SHA
